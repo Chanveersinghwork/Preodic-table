@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Neon Periodic Table 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .elements-scroll {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            height: 100vh;
+            cursor: grab;
+        }
+
+        .elements-scroll:active {
+            cursor: grabbing;
+        }
+
+        .element-card {
+            min-width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05), transparent 70%);
+            border-right: 1px solid rgba(0, 255, 255, 0.1);
+        }
+
+        .element-symbol {
+            font-size: clamp(4rem, 15vw, 12rem);
+            font-weight: bold;
+            text-shadow: 0 0 30px currentColor, 0 0 60px currentColor;
+            margin-bottom: 1rem;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .element-name {
+            font-size: clamp(1.5rem, 4vw, 3rem);
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .element-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 2rem 0;
+            max-width: 90vw;
+        }
+
+        .detail-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .detail-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .navigation {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            border-radius: 25px;
+            color: #00ffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .element-counter {
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            padding: 0.5rem 1.5rem;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+            }
+            to {
+                text-shadow: 0 0 40px currentColor, 0 0 60px currentColor, 0 0 80px currentColor;
+            }
+        }
+
+        /* Element color classes */
+        .alkali-metals { color: #ff6b6b; }
+        .alkaline-earth { color: #4ecdc4; }
+        .transition-metals { color: #45b7d1; }
+        .post-transition { color: #96ceb4; }
+        .metalloids { color: #feca57; }
+        .nonmetals { color: #ff9ff3; }
+        .noble-gases { color: #a29bfe; }
+        .lanthanides { color: #fd79a8; }
+        .actinides { color: #fdcb6e; }
+        .unknown { color: #ddd; }
+
+        .state-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 2rem;
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .solid { background: rgba(255, 107, 107, 0.3); border: 1px solid #ff6b6b; }
+        .liquid { background: rgba(78, 205, 196, 0.3); border: 1px solid #4ecdc4; }
+        .gas { background: rgba(162, 155, 254, 0.3); border: 1px solid #a29bfe; }
+
+        @media (max-width: 768px) {
+            .element-details {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+            
+            .detail-item {
+                padding: 0.8rem;
+            }
+            
+            .nav-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="elements-scroll" id="elementsScroll">
+            <!-- Elements will be generated by JavaScript -->
+        </div>
+        
+        <div class="element-counter" id="elementCounter">
+            1 / 118
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" onclick="previousElement()">← Previous</button>
+            <button class="nav-btn" onclick="nextElement()">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        const elements = [
+            {symbol: 'H', name: 'Hydrogen', atomicNo: 1, mass: 1.008, block: 'Nonmetal', group: 'Nonmetals', state: 'gas', class: 'nonmetals'},
+            {symbol: 'He', name: 'Helium', atomicNo: 2, mass: 4.003, block: 'Noble Gas', group: 'Noble Gases', state: 'gas', class: 'noble-gases'},
+            {symbol: 'Li', name: 'Lithium', atomicNo: 3, mass: 6.94, block: 'Alkali Metal', group: 'Alkali Metals', state: 'solid', class: 'alkali-metals'},
+            {symbol: 'Be', name: 'Beryllium', atomicNo: 4, mass: 9.012, block: 'Alkaline Earth Metal', group: 'Alkaline Earth Metals', state: 'solid', class: 'alkaline-earth'},
+            {symbol: 'B', name: 'Boron', atomicNo: 5, mass: 10.81, block: 'Metalloid', group: 'Metalloids', state: 'solid', class: 'metalloids'},
+            {symbol: 'C', name: 'Carbon', atomicNo: 6, mass: 12.011, block: 'Nonmetal', group: 'Nonmetals', state: 'solid', class: 'nonmetals'},
+            {symbol: 'N', name: 'Nitrogen', atomicNo: 7, mass: 14.007, block: 'Nonmetal', group: 'Nonmetals', state: 'gas', class: 'nonmetals'},
+            {symbol: 'O', name: 'Oxygen', atomicNo: 8, mass: 15.999, block: 'Nonmetal', group: 'Nonmetals', state: 'gas', class: 'nonmetals'},
+            {symbol: 'F', name: 'Fluorine', atomicNo: 9, mass: 18.998, block: 'Halogen', group: 'Nonmetals', state: 'gas', class: 'nonmetals'},
+            {symbol: 'Ne', name: 'Neon', atomicNo: 10, mass: 20.180, block: 'Noble Gas', group: 'Noble Gases', state: 'gas', class: 'noble-gases'},
+            {symbol: 'Na', name: 'Sodium', atomicNo: 11, mass: 22.990, block: 'Alkali Metal', group: 'Alkali Metals', state: 'solid', class: 'alkali-metals'},
+            {symbol: 'Mg', name: 'Magnesium', atomicNo: 12, mass: 24.305, block: 'Alkaline Earth Metal', group: 'Alkaline Earth Metals', state: 'solid', class: 'alkaline-earth'},
+            {symbol: 'Al', name: 'Aluminum', atomicNo: 13, mass: 26.982, block: 'Post-Transition Metal', group: 'Post-Transition Metals', state: 'solid', class: 'post-transition'},
+            {symbol: 'Si', name: 'Silicon', atomicNo: 14, mass: 28.085, block: 'Metalloid', group: 'Metalloids', state: 'solid', class: 'metalloids'},
+            {symbol: 'P', name: 'Phosphorus', atomicNo: 15, mass: 30.974, block: 'Nonmetal', group: 'Nonmetals', state: 'solid', class: 'nonmetals'},
+            {symbol: 'S', name: 'Sulfur', atomicNo: 16, mass: 32.06, block: 'Nonmetal', group: 'Nonmetals', state: 'solid', class: 'nonmetals'},
+            {symbol: 'Cl', name: 'Chlorine', atomicNo: 17, mass: 35.45, block: 'Halogen', group: 'Nonmetals', state: 'gas', class: 'nonmetals'},
+            {symbol: 'Ar', name: 'Argon', atomicNo: 18, mass: 39.948, block: 'Noble Gas', group: 'Noble Gases', state: 'gas', class: 'noble-gases'},
+            {symbol: 'K', name: 'Potassium', atomicNo: 19, mass: 39.098, block: 'Alkali Metal', group: 'Alkali Metals', state: 'solid', class: 'alkali-metals'},
+            {symbol: 'Ca', name: 'Calcium', atomicNo: 20, mass: 40.078, block: 'Alkaline Earth Metal', group: 'Alkaline Earth Metals', state: 'solid', class: 'alkaline-earth'},
+            {symbol: 'Sc', name: 'Scandium', atomicNo: 21, mass: 44.956, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Ti', name: 'Titanium', atomicNo: 22, mass: 47.867, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'V', name: 'Vanadium', atomicNo: 23, mass: 50.942, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Cr', name: 'Chromium', atomicNo: 24, mass: 51.996, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Mn', name: 'Manganese', atomicNo: 25, mass: 54.938, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Fe', name: 'Iron', atomicNo: 26, mass: 55.845, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Co', name: 'Cobalt', atomicNo: 27, mass: 58.933, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Ni', name: 'Nickel', atomicNo: 28, mass: 58.693, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Cu', name: 'Copper', atomicNo: 29, mass: 63.546, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Zn', name: 'Zinc', atomicNo: 30, mass: 65.38, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Ga', name: 'Gallium', atomicNo: 31, mass: 69.723, block: 'Post-Transition Metal', group: 'Post-Transition Metals', state: 'solid', class: 'post-transition'},
+            {symbol: 'Ge', name: 'Germanium', atomicNo: 32, mass: 72.630, block: 'Metalloid', group: 'Metalloids', state: 'solid', class: 'metalloids'},
+            {symbol: 'As', name: 'Arsenic', atomicNo: 33, mass: 74.922, block: 'Metalloid', group: 'Metalloids', state: 'solid', class: 'metalloids'},
+            {symbol: 'Se', name: 'Selenium', atomicNo: 34, mass: 78.971, block: 'Nonmetal', group: 'Nonmetals', state: 'solid', class: 'nonmetals'},
+            {symbol: 'Br', name: 'Bromine', atomicNo: 35, mass: 79.904, block: 'Halogen', group: 'Nonmetals', state: 'liquid', class: 'nonmetals'},
+            {symbol: 'Kr', name: 'Krypton', atomicNo: 36, mass: 83.798, block: 'Noble Gas', group: 'Noble Gases', state: 'gas', class: 'noble-gases'},
+            {symbol: 'Rb', name: 'Rubidium', atomicNo: 37, mass: 85.468, block: 'Alkali Metal', group: 'Alkali Metals', state: 'solid', class: 'alkali-metals'},
+            {symbol: 'Sr', name: 'Strontium', atomicNo: 38, mass: 87.62, block: 'Alkaline Earth Metal', group: 'Alkaline Earth Metals', state: 'solid', class: 'alkaline-earth'},
+            {symbol: 'Y', name: 'Yttrium', atomicNo: 39, mass: 88.906, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Zr', name: 'Zirconium', atomicNo: 40, mass: 91.224, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Nb', name: 'Niobium', atomicNo: 41, mass: 92.906, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Mo', name: 'Molybdenum', atomicNo: 42, mass: 95.95, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Tc', name: 'Technetium', atomicNo: 43, mass: 98, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Ru', name: 'Ruthenium', atomicNo: 44, mass: 101.07, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Rh', name: 'Rhodium', atomicNo: 45, mass: 102.91, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Pd', name: 'Palladium', atomicNo: 46, mass: 106.42, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Ag', name: 'Silver', atomicNo: 47, mass: 107.87, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Cd', name: 'Cadmium', atomicNo: 48, mass: 112.41, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'In', name: 'Indium', atomicNo: 49, mass: 114.82, block: 'Post-Transition Metal', group: 'Post-Transition Metals', state: 'solid', class: 'post-transition'},
+            {symbol: 'Sn', name: 'Tin', atomicNo: 50, mass: 118.71, block: 'Post-Transition Metal', group: 'Post-Transition Metals', state: 'solid', class: 'post-transition'},
+            {symbol: 'Sb', name: 'Antimony', atomicNo: 51, mass: 121.76, block: 'Metalloid', group: 'Metalloids', state: 'solid', class: 'metalloids'},
+            {symbol: 'Te', name: 'Tellurium', atomicNo: 52, mass: 127.60, block: 'Metalloid', group: 'Metalloids', state: 'solid', class: 'metalloids'},
+            {symbol: 'I', name: 'Iodine', atomicNo: 53, mass: 126.90, block: 'Halogen', group: 'Nonmetals', state: 'solid', class: 'nonmetals'},
+            {symbol: 'Xe', name: 'Xenon', atomicNo: 54, mass: 131.29, block: 'Noble Gas', group: 'Noble Gases', state: 'gas', class: 'noble-gases'},
+            {symbol: 'Cs', name: 'Cesium', atomicNo: 55, mass: 132.91, block: 'Alkali Metal', group: 'Alkali Metals', state: 'solid', class: 'alkali-metals'},
+            {symbol: 'Ba', name: 'Barium', atomicNo: 56, mass: 137.33, block: 'Alkaline Earth Metal', group: 'Alkaline Earth Metals', state: 'solid', class: 'alkaline-earth'},
+            {symbol: 'La', name: 'Lanthanum', atomicNo: 57, mass: 138.91, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Ce', name: 'Cerium', atomicNo: 58, mass: 140.12, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Pr', name: 'Praseodymium', atomicNo: 59, mass: 140.91, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Nd', name: 'Neodymium', atomicNo: 60, mass: 144.24, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Pm', name: 'Promethium', atomicNo: 61, mass: 145, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Sm', name: 'Samarium', atomicNo: 62, mass: 150.36, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Eu', name: 'Europium', atomicNo: 63, mass: 151.96, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Gd', name: 'Gadolinium', atomicNo: 64, mass: 157.25, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Tb', name: 'Terbium', atomicNo: 65, mass: 158.93, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Dy', name: 'Dysprosium', atomicNo: 66, mass: 162.50, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Ho', name: 'Holmium', atomicNo: 67, mass: 164.93, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Er', name: 'Erbium', atomicNo: 68, mass: 167.26, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Tm', name: 'Thulium', atomicNo: 69, mass: 168.93, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Yb', name: 'Ytterbium', atomicNo: 70, mass: 173.05, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Lu', name: 'Lutetium', atomicNo: 71, mass: 174.97, block: 'Lanthanide', group: 'Lanthanides', state: 'solid', class: 'lanthanides'},
+            {symbol: 'Hf', name: 'Hafnium', atomicNo: 72, mass: 178.49, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Ta', name: 'Tantalum', atomicNo: 73, mass: 180.95, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'W', name: 'Tungsten', atomicNo: 74, mass: 183.84, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Re', name: 'Rhenium', atomicNo: 75, mass: 186.21, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Os', name: 'Osmium', atomicNo: 76, mass: 190.23, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Ir', name: 'Iridium', atomicNo: 77, mass: 192.22, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Pt', name: 'Platinum', atomicNo: 78, mass: 195.08, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Au', name: 'Gold', atomicNo: 79, mass: 196.97, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Hg', name: 'Mercury', atomicNo: 80, mass: 200.59, block: 'Transition Metal', group: 'Transition Metals', state: 'liquid', class: 'transition-metals'},
+            {symbol: 'Tl', name: 'Thallium', atomicNo: 81, mass: 204.38, block: 'Post-Transition Metal', group: 'Post-Transition Metals', state: 'solid', class: 'post-transition'},
+            {symbol: 'Pb', name: 'Lead', atomicNo: 82, mass: 207.2, block: 'Post-Transition Metal', group: 'Post-Transition Metals', state: 'solid', class: 'post-transition'},
+            {symbol: 'Bi', name: 'Bismuth', atomicNo: 83, mass: 208.98, block: 'Post-Transition Metal', group: 'Post-Transition Metals', state: 'solid', class: 'post-transition'},
+            {symbol: 'Po', name: 'Polonium', atomicNo: 84, mass: 209, block: 'Metalloid', group: 'Metalloids', state: 'solid', class: 'metalloids'},
+            {symbol: 'At', name: 'Astatine', atomicNo: 85, mass: 210, block: 'Halogen', group: 'Nonmetals', state: 'solid', class: 'nonmetals'},
+            {symbol: 'Rn', name: 'Radon', atomicNo: 86, mass: 222, block: 'Noble Gas', group: 'Noble Gases', state: 'gas', class: 'noble-gases'},
+            {symbol: 'Fr', name: 'Francium', atomicNo: 87, mass: 223, block: 'Alkali Metal', group: 'Alkali Metals', state: 'solid', class: 'alkali-metals'},
+            {symbol: 'Ra', name: 'Radium', atomicNo: 88, mass: 226, block: 'Alkaline Earth Metal', group: 'Alkaline Earth Metals', state: 'solid', class: 'alkaline-earth'},
+            {symbol: 'Ac', name: 'Actinium', atomicNo: 89, mass: 227, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Th', name: 'Thorium', atomicNo: 90, mass: 232.04, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Pa', name: 'Protactinium', atomicNo: 91, mass: 231.04, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'U', name: 'Uranium', atomicNo: 92, mass: 238.03, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Np', name: 'Neptunium', atomicNo: 93, mass: 237, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Pu', name: 'Plutonium', atomicNo: 94, mass: 244, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Am', name: 'Americium', atomicNo: 95, mass: 243, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Cm', name: 'Curium', atomicNo: 96, mass: 247, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Bk', name: 'Berkelium', atomicNo: 97, mass: 247, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Cf', name: 'Californium', atomicNo: 98, mass: 251, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Es', name: 'Einsteinium', atomicNo: 99, mass: 252, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Fm', name: 'Fermium', atomicNo: 100, mass: 257, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Md', name: 'Mendelevium', atomicNo: 101, mass: 258, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'No', name: 'Nobelium', atomicNo: 102, mass: 259, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Lr', name: 'Lawrencium', atomicNo: 103, mass: 266, block: 'Actinide', group: 'Actinides', state: 'solid', class: 'actinides'},
+            {symbol: 'Rf', name: 'Rutherfordium', atomicNo: 104, mass: 267, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Db', name: 'Dubnium', atomicNo: 105, mass: 268, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Sg', name: 'Seaborgium', atomicNo: 106, mass: 269, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Bh', name: 'Bohrium', atomicNo: 107, mass: 270, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Hs', name: 'Hassium', atomicNo: 108, mass: 277, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Mt', name: 'Meitnerium', atomicNo: 109, mass: 278, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Ds', name: 'Darmstadtium', atomicNo: 110, mass: 281, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Rg', name: 'Roentgenium', atomicNo: 111, mass: 282, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Cn', name: 'Copernicium', atomicNo: 112, mass: 285, block: 'Transition Metal', group: 'Transition Metals', state: 'solid', class: 'transition-metals'},
+            {symbol: 'Nh', name: 'Nihonium', atomicNo: 113, mass: 286, block: 'Post-Transition Metal', group: 'Post-Transition Metals', state: 'solid', class: 'post-transition'},
+            {symbol: 'Fl', name: 'Flerovium', atomicNo: 114, mass: 289, block: 'Post-Transition Metal', group: 'Post-Transition Metals', state: 'solid', class: 'post-transition'},
+            {symbol: 'Mc', name: 'Moscovium', atomicNo: 115, mass: 290, block: 'Post-Transition Metal', group: 'Post-Transition Metals', state: 'solid', class: 'post-transition'},
+            {symbol: 'Lv', name: 'Livermorium', atomicNo: 116, mass: 293, block: 'Post-Transition Metal', group: 'Post-Transition Metals', state: 'solid', class: 'post-transition'},
+            {symbol: 'Ts', name: 'Tennessine', atomicNo: 117, mass: 294, block: 'Halogen', group: 'Nonmetals', state: 'solid', class: 'nonmetals'},
+            {symbol: 'Og', name: 'Oganesson', atomicNo: 118, mass: 294, block: 'Noble Gas', group: 'Noble Gases', state: 'solid', class: 'noble-gases'}
+        ];
+
+        let currentElement = 0;
+        let isScrolling = false;
+        let startX = 0;
+        let startTime = 0;
+
+        function createElementCard(element, index) {
+            return `
+                <div class="element-card">
+                    <div class="state-indicator ${element.state}">${element.state.toUpperCase()}</div>
+                    <div class="element-symbol ${element.class}">${element.symbol}</div>
+                    <div class="element-name">${element.name}</div>
+                    <div class="element-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Atomic Number</div>
+                            <div class="detail-value">${element.atomicNo}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Atomic Mass</div>
+                            <div class="detail-value">${element.mass}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Block</div>
+                            <div class="detail-value">${element.block}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Group</div>
+                            <div class="detail-value">${element.group}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderElements() {
+            const elementsScroll = document.getElementById('elementsScroll');
+            elementsScroll.innerHTML = elements.map((element, index) => createElementCard(element, index)).join('');
+        }
+
+        function updateCounter() {
+            document.getElementById('elementCounter').textContent = `${currentElement + 1} / ${elements.length}`;
+        }
+
+        function goToElement(index) {
+            if (index < 0) index = 0;
+            if (index >= elements.length) index = elements.length - 1;
+            
+            currentElement = index;
+            const elementsScroll = document.getElementById('elementsScroll');
+            elementsScroll.style.transform = `translateX(-${currentElement * 100}vw)`;
+            updateCounter();
+        }
+
+        function nextElement() {
+            if (currentElement < elements.length - 1) {
+                goToElement(currentElement + 1);
+            }
+        }
+
+        function previousElement() {
+            if (currentElement > 0) {
+                goToElement(currentElement - 1);
+            }
+        }
+
+        // Touch and mouse event handlers
+        let isDragging = false;
+        let startPosition = 0;
+        let currentTranslate = 0;
+        let prevTranslate = 0;
+        let animationID = 0;
+
+        function getPositionX(event) {
+            return event.type.includes('mouse') ? event.clientX : event.touches[0].clientX;
+        }
+
+        function touchStart(event) {
+            startPosition = getPositionX(event);
+            isDragging = true;
+            animationID = requestAnimationFrame(animation);
+            
+            const elementsScroll = document.getElementById('elementsScroll');
+            elementsScroll.style.cursor = 'grabbing';
+        }
+
+        function touchMove(event) {
+            if (isDragging) {
+                const currentPosition = getPositionX(event);
+                currentTranslate = prevTranslate + currentPosition - startPosition;
+            }
+        }
+
+        function touchEnd() {
+            isDragging = false;
+            cancelAnimationFrame(animationID);
+            
+            const elementsScroll = document.getElementById('elementsScroll');
+            elementsScroll.style.cursor = 'grab';
+            
+            const movedBy = currentTranslate - prevTranslate;
+            
+            if (Math.abs(movedBy) > 50) {
+                if (movedBy > 0 && currentElement > 0) {
+                    goToElement(currentElement - 1);
+                } else if (movedBy < 0 && currentElement < elements.length - 1) {
+                    goToElement(currentElement + 1);
+                }
+            }
+            
+            setSliderPosition();
+            setPositionByIndex();
+        }
+
+        function animation() {
+            setSliderPosition();
+            if (isDragging) requestAnimationFrame(animation);
+        }
+
+        function setSliderPosition() {
+            const elementsScroll = document.getElementById('elementsScroll');
+            if (isDragging) {
+                elementsScroll.style.transform = `translateX(${currentTranslate}px)`;
+            }
+        }
+
+        function setPositionByIndex() {
+            currentTranslate = currentElement * -window.innerWidth;
+            prevTranslate = currentTranslate;
+            setSliderPosition();
+        }
+
+        // Keyboard navigation
+        function handleKeyPress(event) {
+            switch(event.key) {
+                case 'ArrowLeft':
+                    previousElement();
+                    break;
+                case 'ArrowRight':
+                    nextElement();
+                    break;
+                case 'Home':
+                    goToElement(0);
+                    break;
+                case 'End':
+                    goToElement(elements.length - 1);
+                    break;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderElements();
+            updateCounter();
+            setPositionByIndex();
+            
+            const elementsScroll = document.getElementById('elementsScroll');
+            
+            // Mouse events
+            elementsScroll.addEventListener('mousedown', touchStart);
+            elementsScroll.addEventListener('mousemove', touchMove);
+            elementsScroll.addEventListener('mouseup', touchEnd);
+            elementsScroll.addEventListener('mouseleave', touchEnd);
+            
+            // Touch events
+            elementsScroll.addEventListener('touchstart', touchStart);
+            elementsScroll.addEventListener('touchmove', touchMove);
+            elementsScroll.addEventListener('touchend', touchEnd);
+            
+            // Keyboard events
+            document.addEventListener('keydown', handleKeyPress);
+            
+            // Prevent context menu on right click
+            elementsScroll.addEventListener('contextmenu', e => e.preventDefault());
+            
+            // Prevent drag default behavior
+            elementsScroll.addEventListener('dragstart', e => e.preventDefault());
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            setPositionByIndex();
+        });
+    </script>
+</body>
+</html>
