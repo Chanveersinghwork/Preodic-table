@@ -377,6 +377,42 @@
             height: 100vh;
             overflow: auto;
             padding: 2rem;
+            position: relative;
+        }
+
+        .table-controls {
+            position: absolute;
+            top: 1rem;
+            right: 2rem;
+            z-index: 100;
+        }
+
+        .rotate-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(255, 165, 0, 0.2);
+            border: 2px solid #ffa500;
+            border-radius: 25px;
+            color: #ffa500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: none;
+        }
+
+        .rotate-btn:hover {
+            background: rgba(255, 165, 0, 0.3);
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
+            transform: scale(1.05);
+        }
+
+        .table-container {
+            transition: all 0.5s ease;
+            transform-origin: center center;
+        }
+
+        .table-container.rotated {
+            transform: rotate(90deg) scale(0.6);
+            margin: 20vh 0;
         }
 
         .periodic-table {
@@ -386,6 +422,13 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 2rem 0;
+            transition: all 0.5s ease;
+        }
+
+        .periodic-table.mobile-rotated {
+            grid-template-columns: repeat(18, 1fr);
+            gap: 1px;
+            font-size: 0.7rem;
         }
 
         .table-element {
@@ -481,8 +524,35 @@
                 grid-template-columns: repeat(9, 1fr); 
                 gap: 1px; 
             }
+            .periodic-table.mobile-rotated {
+                grid-template-columns: repeat(18, 1fr);
+                gap: 0.5px;
+            }
             .table-element { 
                 min-height: 50px; 
+                font-size: 0.7rem;
+            }
+            .table-element.mobile-small {
+                min-height: 35px;
+                font-size: 0.6rem;
+            }
+            .table-symbol {
+                font-size: 1rem;
+            }
+            .table-symbol.mobile-small {
+                font-size: 0.8rem;
+            }
+            .table-number {
+                font-size: 0.6rem;
+            }
+            .table-number.mobile-small {
+                font-size: 0.5rem;
+            }
+            .table-block-label {
+                font-size: 0.5rem;
+            }
+            .table-block-label.mobile-small {
+                font-size: 0.4rem;
             }
             .submenu-options { 
                 flex-direction: column; 
@@ -505,6 +575,26 @@
                 top: 1rem;
                 font-size: 1rem;
                 padding: 0.4rem 1rem;
+            }
+            .rotate-btn {
+                display: block;
+                top: 0.5rem;
+                right: 1rem;
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            .table-controls {
+                top: 0.5rem;
+                right: 1rem;
+            }
+            .legend {
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+            }
+            .legend-item {
+                padding: 0.3rem 0.8rem;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -572,6 +662,9 @@
         <!-- Table Display -->
         <div class="table-display" id="tableDisplay">
             <button class="back-btn" onclick="showMainMenu()">← Back to Main Menu</button>
+            <div class="table-controls">
+                <button class="rotate-btn" id="rotateBtn" onclick="toggleRotation()">📱 Rotate View</button>
+            </div>
             <h2 class="display-title">Complete Periodic Table</h2>
             <div class="legend">
                 <div class="legend-item">
@@ -591,7 +684,9 @@
                     <span>F-Block</span>
                 </div>
             </div>
-            <div class="periodic-table" id="periodicTable"></div>
+            <div class="table-container" id="tableContainer">
+                <div class="periodic-table" id="periodicTable"></div>
+            </div>
         </div>
     </div>
 
@@ -893,6 +988,8 @@
             }
         }
 
+        let isRotated = false;
+
         function showTable() {
             document.getElementById('mainMenu').style.display = 'none';
             document.getElementById('fSubmenu').style.display = 'none';
@@ -900,6 +997,48 @@
             document.getElementById('tableDisplay').style.display = 'block';
             
             createPeriodicTable();
+        }
+
+        function toggleRotation() {
+            const tableContainer = document.getElementById('tableContainer');
+            const periodicTable = document.getElementById('periodicTable');
+            const rotateBtn = document.getElementById('rotateBtn');
+            const tableElements = document.querySelectorAll('.table-element');
+            const tableSymbols = document.querySelectorAll('.table-symbol');
+            const tableNumbers = document.querySelectorAll('.table-number');
+            const tableLabels = document.querySelectorAll('.table-block-label');
+
+            isRotated = !isRotated;
+
+            if (isRotated) {
+                // Switch to horizontal rotated view
+                tableContainer.classList.add('rotated');
+                periodicTable.classList.add('mobile-rotated');
+                rotateBtn.textContent = '📱 Portrait View';
+                
+                // Make elements smaller for rotated view
+                tableElements.forEach(el => el.classList.add('mobile-small'));
+                tableSymbols.forEach(el => el.classList.add('mobile-small'));
+                tableNumbers.forEach(el => el.classList.add('mobile-small'));
+                tableLabels.forEach(el => el.classList.add('mobile-small'));
+                
+                // Temporarily disable scrolling on body to prevent issues
+                document.body.style.overflow = 'hidden';
+            } else {
+                // Switch back to portrait view
+                tableContainer.classList.remove('rotated');
+                periodicTable.classList.remove('mobile-rotated');
+                rotateBtn.textContent = '📱 Rotate View';
+                
+                // Remove small element classes
+                tableElements.forEach(el => el.classList.remove('mobile-small'));
+                tableSymbols.forEach(el => el.classList.remove('mobile-small'));
+                tableNumbers.forEach(el => el.classList.remove('mobile-small'));
+                tableLabels.forEach(el => el.classList.remove('mobile-small'));
+                
+                // Re-enable scrolling
+                document.body.style.overflow = 'auto';
+            }
         }
 
         function createPeriodicTable() {
@@ -986,6 +1125,15 @@
                 const emptyDiv = document.createElement('div');
                 emptyDiv.className = 'empty-cell';
                 table.appendChild(emptyDiv);
+            }
+
+            // Reset rotation state when creating new table
+            if (isRotated) {
+                isRotated = false;
+                document.getElementById('rotateBtn').textContent = '📱 Rotate View';
+                document.getElementById('tableContainer').classList.remove('rotated');
+                document.getElementById('periodicTable').classList.remove('mobile-rotated');
+                document.body.style.overflow = 'auto';
             }
         }
 
