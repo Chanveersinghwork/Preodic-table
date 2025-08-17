@@ -30,12 +30,14 @@
         .main-menu {
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             width: 100vw;
             height: 100vh;
             gap: 2rem;
             padding: 2rem;
+            overflow-y: auto;
+            padding-top: 3rem;
         }
 
         .menu-title {
@@ -47,6 +49,9 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: glow 2s ease-in-out infinite alternate;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .menu-options {
@@ -55,6 +60,7 @@
             gap: 1.5rem;
             max-width: 1200px;
             width: 100%;
+            padding-bottom: 2rem;
         }
 
         .menu-btn {
@@ -136,13 +142,150 @@
             box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
         }
 
-        /* Element Display Styles */
+        /* Element Display Styles with Swipe Support */
         .elements-display {
             display: none;
             width: 100vw;
             height: 100vh;
-            overflow-y: auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .elements-scroll-container {
+            display: flex;
+            height: 100vh;
+            transition: transform 0.3s ease;
+            touch-action: pan-y;
+        }
+
+        .element-slide {
+            min-width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             padding: 2rem;
+            position: relative;
+        }
+
+        .slide-element-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid;
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            max-width: 90vw;
+            width: 400px;
+            text-align: center;
+            position: relative;
+        }
+
+        .slide-element-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .slide-element-symbol {
+            font-size: clamp(4rem, 12vw, 8rem);
+            font-weight: bold;
+            text-shadow: 0 0 30px currentColor;
+        }
+
+        .slide-element-number {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+
+        .slide-element-name {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .slide-element-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .slide-detail-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .slide-detail-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .slide-detail-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .swipe-navigation {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .swipe-nav-btn {
+            padding: 0.8rem 1.5rem;
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            border-radius: 25px;
+            color: #00ffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .swipe-nav-btn:hover {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .element-counter {
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            padding: 0.5rem 1.5rem;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .swipe-indicator {
+            position: absolute;
+            top: 50%;
+            font-size: 1.5rem;
+            opacity: 0.5;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .swipe-left {
+            left: 1rem;
+        }
+
+        .swipe-right {
+            right: 1rem;
         }
 
         .display-title {
@@ -322,11 +465,47 @@
         }
 
         @media (max-width: 768px) {
-            .menu-options { grid-template-columns: 1fr; }
-            .elements-grid { grid-template-columns: 1fr; }
-            .periodic-table { grid-template-columns: repeat(9, 1fr); gap: 1px; }
-            .table-element { min-height: 50px; }
-            .submenu-options { flex-direction: column; align-items: center; }
+            .menu-options { 
+                grid-template-columns: 1fr; 
+                max-height: none;
+            }
+            .main-menu {
+                height: auto;
+                min-height: 100vh;
+                padding-bottom: 3rem;
+            }
+            .elements-grid { 
+                grid-template-columns: 1fr; 
+            }
+            .periodic-table { 
+                grid-template-columns: repeat(9, 1fr); 
+                gap: 1px; 
+            }
+            .table-element { 
+                min-height: 50px; 
+            }
+            .submenu-options { 
+                flex-direction: column; 
+                align-items: center; 
+            }
+            .slide-element-details {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+            }
+            .swipe-navigation {
+                flex-direction: column;
+                gap: 0.5rem;
+                bottom: 1rem;
+            }
+            .swipe-nav-btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+            .element-counter {
+                top: 1rem;
+                font-size: 1rem;
+                padding: 0.4rem 1rem;
+            }
         }
     </style>
 </head>
@@ -378,8 +557,16 @@
         <!-- Elements Display -->
         <div class="elements-display" id="elementsDisplay">
             <button class="back-btn" onclick="showMainMenu()">← Back to Main Menu</button>
-            <h2 class="display-title" id="displayTitle"></h2>
-            <div class="elements-grid" id="elementsGrid"></div>
+            <div class="element-counter" id="elementCounter">1 / 1</div>
+            <div class="swipe-indicator swipe-left" id="swipeLeft">‹</div>
+            <div class="swipe-indicator swipe-right" id="swipeRight">›</div>
+            <div class="elements-scroll-container" id="elementsScrollContainer">
+                <!-- Element slides will be generated here -->
+            </div>
+            <div class="swipe-navigation">
+                <button class="swipe-nav-btn" onclick="previousSlide()">← Previous</button>
+                <button class="swipe-nav-btn" onclick="nextSlide()">Next →</button>
+            </div>
         </div>
 
         <!-- Table Display -->
@@ -530,6 +717,12 @@
             {symbol: 'Og', name: 'Oganesson', atomicNo: 118, mass: 294, block: 'p', group: 'Noble Gases', state: 'solid', period: 7, groupNum: 18}
         ];
 
+        let currentSlide = 0;
+        let currentElements = [];
+        let isSwipeScrolling = false;
+        let startSwipeX = 0;
+        let currentTranslateX = 0;
+
         function showMainMenu() {
             document.getElementById('mainMenu').style.display = 'flex';
             document.getElementById('fSubmenu').style.display = 'none';
@@ -571,11 +764,14 @@
                     break;
             }
 
-            document.getElementById('displayTitle').textContent = title;
-            document.getElementById('displayTitle').className = `display-title ${blockType === 'lanthanides' || blockType === 'actinides' ? 'f-block' : blockType + '-block'}`;
+            currentElements = filteredElements;
+            currentSlide = 0;
             
-            const elementsGrid = document.getElementById('elementsGrid');
-            elementsGrid.innerHTML = filteredElements.map(element => createElementCard(element, blockType)).join('');
+            const scrollContainer = document.getElementById('elementsScrollContainer');
+            scrollContainer.innerHTML = filteredElements.map((element, index) => createElementSlide(element, blockType, index)).join('');
+            
+            updateSlideCounter();
+            updateSlidePosition();
 
             document.getElementById('mainMenu').style.display = 'none';
             document.getElementById('fSubmenu').style.display = 'none';
@@ -583,36 +779,106 @@
             document.getElementById('tableDisplay').style.display = 'none';
         }
 
-        function createElementCard(element, blockType) {
+        function createElementSlide(element, blockType, index) {
             const blockClass = blockType === 'lanthanides' || blockType === 'actinides' ? 'f-block' : blockType + '-block';
+            const color = getBlockColor(blockType);
+            
             return `
-                <div class="element-card ${blockClass}" style="border-color: ${getBlockColor(blockType)}; color: ${getBlockColor(blockType)};">
-                    <div class="state-indicator ${element.state}">${element.state.toUpperCase()}</div>
-                    <div class="element-header">
-                        <div class="element-symbol">${element.symbol}</div>
-                        <div class="element-number">${element.atomicNo}</div>
-                    </div>
-                    <div class="element-name">${element.name}</div>
-                    <div class="element-details">
-                        <div class="detail-item">
-                            <span>Atomic Mass:</span>
-                            <span>${element.mass}</span>
+                <div class="element-slide">
+                    <div class="slide-element-card ${blockClass}" style="border-color: ${color}; color: ${color};">
+                        <div class="state-indicator ${element.state}">${element.state.toUpperCase()}</div>
+                        <div class="slide-element-header">
+                            <div class="slide-element-symbol">${element.symbol}</div>
+                            <div class="slide-element-number">${element.atomicNo}</div>
                         </div>
-                        <div class="detail-item">
-                            <span>Block:</span>
-                            <span>${element.block.toUpperCase()}-Block</span>
-                        </div>
-                        <div class="detail-item">
-                            <span>Group:</span>
-                            <span>${element.group}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span>State:</span>
-                            <span>${element.state.charAt(0).toUpperCase() + element.state.slice(1)}</span>
+                        <div class="slide-element-name">${element.name}</div>
+                        <div class="slide-element-details">
+                            <div class="slide-detail-item">
+                                <div class="slide-detail-label">Atomic Mass</div>
+                                <div class="slide-detail-value">${element.mass}</div>
+                            </div>
+                            <div class="slide-detail-item">
+                                <div class="slide-detail-label">Block</div>
+                                <div class="slide-detail-value">${element.block.toUpperCase()}</div>
+                            </div>
+                            <div class="slide-detail-item">
+                                <div class="slide-detail-label">Group</div>
+                                <div class="slide-detail-value">${element.group}</div>
+                            </div>
+                            <div class="slide-detail-item">
+                                <div class="slide-detail-label">State</div>
+                                <div class="slide-detail-value">${element.state.charAt(0).toUpperCase() + element.state.slice(1)}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
+        }
+
+        function updateSlideCounter() {
+            document.getElementById('elementCounter').textContent = `${currentSlide + 1} / ${currentElements.length}`;
+        }
+
+        function updateSlidePosition() {
+            const scrollContainer = document.getElementById('elementsScrollContainer');
+            scrollContainer.style.transform = `translateX(-${currentSlide * 100}vw)`;
+            
+            // Update swipe indicators
+            document.getElementById('swipeLeft').style.opacity = currentSlide > 0 ? '0.5' : '0.2';
+            document.getElementById('swipeRight').style.opacity = currentSlide < currentElements.length - 1 ? '0.5' : '0.2';
+        }
+
+        function nextSlide() {
+            if (currentSlide < currentElements.length - 1) {
+                currentSlide++;
+                updateSlideCounter();
+                updateSlidePosition();
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlideCounter();
+                updateSlidePosition();
+            }
+        }
+
+        function handleSwipeStart(event) {
+            isSwipeScrolling = true;
+            startSwipeX = event.type.includes('mouse') ? event.clientX : event.touches[0].clientX;
+            currentTranslateX = -currentSlide * window.innerWidth;
+        }
+
+        function handleSwipeMove(event) {
+            if (!isSwipeScrolling) return;
+            
+            event.preventDefault();
+            const currentX = event.type.includes('mouse') ? event.clientX : event.touches[0].clientX;
+            const diffX = currentX - startSwipeX;
+            const newTranslateX = currentTranslateX + diffX;
+            
+            document.getElementById('elementsScrollContainer').style.transform = `translateX(${newTranslateX}px)`;
+        }
+
+        function handleSwipeEnd(event) {
+            if (!isSwipeScrolling) return;
+            
+            isSwipeScrolling = false;
+            const endX = event.type.includes('mouse') ? event.clientX : (event.changedTouches ? event.changedTouches[0].clientX : startSwipeX);
+            const diffX = endX - startSwipeX;
+            
+            if (Math.abs(diffX) > 50) {
+                if (diffX > 0 && currentSlide > 0) {
+                    previousSlide();
+                } else if (diffX < 0 && currentSlide < currentElements.length - 1) {
+                    nextSlide();
+                } else {
+                    updateSlidePosition();
+                }
+            } else {
+                updateSlidePosition();
+            }
         }
 
         function getBlockColor(blockType) {
@@ -726,6 +992,38 @@
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             showMainMenu();
+            
+            // Add swipe event listeners
+            const scrollContainer = document.getElementById('elementsScrollContainer');
+            
+            // Touch events for mobile
+            scrollContainer.addEventListener('touchstart', handleSwipeStart, { passive: false });
+            scrollContainer.addEventListener('touchmove', handleSwipeMove, { passive: false });
+            scrollContainer.addEventListener('touchend', handleSwipeEnd, { passive: false });
+            
+            // Mouse events for desktop
+            scrollContainer.addEventListener('mousedown', handleSwipeStart);
+            scrollContainer.addEventListener('mousemove', handleSwipeMove);
+            scrollContainer.addEventListener('mouseup', handleSwipeEnd);
+            scrollContainer.addEventListener('mouseleave', handleSwipeEnd);
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(event) {
+                if (document.getElementById('elementsDisplay').style.display === 'block') {
+                    switch(event.key) {
+                        case 'ArrowLeft':
+                            previousSlide();
+                            break;
+                        case 'ArrowRight':
+                            nextSlide();
+                            break;
+                    }
+                }
+            });
+            
+            // Prevent context menu on right click for scroll container
+            scrollContainer.addEventListener('contextmenu', e => e.preventDefault());
+            scrollContainer.addEventListener('dragstart', e => e.preventDefault());
         });
     </script>
 </body>
