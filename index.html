@@ -598,6 +598,72 @@
             }
         }
     </style>
+
+<style>
+/* --- Floating Name Badge (non-intrusive addition) --- */
+.chanveer-badge {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid #00ffff;
+  color: #00ffff;
+  border-radius: 14px;
+  padding: 10px 14px;
+  z-index: 9999;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.chanveer-panel {
+  position: fixed;
+  bottom: 64px;
+  right: 16px;
+  width: min(380px, 92vw);
+  max-height: 42vh;
+  overflow: auto; /* scrollable */
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid #00ffff;
+  border-radius: 16px;
+  padding: 16px;
+  z-index: 9999;
+  display: none;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+
+.chanveer-panel.open { display: block; }
+
+.chanveer-panel-title {
+  font-size: 1.1rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+  color: #00ffff;
+  text-shadow: 0 0 12px rgba(0,255,255,0.5);
+  letter-spacing: 0.5px;
+}
+
+.chanveer-panel-content {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #e6ffff;
+  opacity: 0.9;
+}
+</style>
+
+
+<style>
+/* Ensure Back to Main Menu stays clickable above any overlays */
+.back-btn {
+  z-index: 9998 !important;
+  pointer-events: auto !important;
+}
+</style>
+
 </head>
 <body>
     <div class="container">
@@ -1174,5 +1240,38 @@
             scrollContainer.addEventListener('dragstart', e => e.preventDefault());
         });
     </script>
+
+<!-- Floating rectangular box with name, click to toggle a scrollable panel -->
+<div class="chanveer-badge" id="chanveerBadge" aria-label="Open CHANVEERSINGH panel">CHANVEERSINGH</div>
+<div class="chanveer-panel" id="chanveerPanel" role="dialog" aria-modal="false" aria-labelledby="chanveerTitle">
+  <div class="chanveer-panel-title" id="chanveerTitle">CHANVEERSINGH</div>
+  <div class="chanveer-panel-content">
+    <p>Hello! This is a dedicated badge and scrollable panel for <strong>CHANVEERSINGH</strong>.</p>
+    <p>It floats above all views at the bottom-right. Tap/click the badge again to close.</p>
+    <p>Keep exploring the Periodic Table — this panel won’t interfere with your existing controls.</p>
+    <p>— Built with minimal, non-breaking changes.</p>
+  </div>
+</div>
+<script>
+// Minimal, isolated toggle logic (no edits to existing code)
+(function () {
+  const badge = document.getElementById('chanveerBadge');
+  const panel = document.getElementById('chanveerPanel');
+  if (!badge || !panel) return;
+  badge.addEventListener('click', function () {
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) {
+      panel.scrollTop = 0;
+    }
+  });
+  // Optional: close panel if user clicks outside
+  document.addEventListener('click', function (e) {
+    if (!panel.classList.contains('open')) return;
+    const isInside = panel.contains(e.target) || badge.contains(e.target);
+    if (!isInside) panel.classList.remove('open');
+  });
+})();
+</script>
+
 </body>
 </html>
